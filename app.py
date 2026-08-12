@@ -773,7 +773,7 @@ def build_features(r, b, r_odds=None, b_odds=None):
     feats["win_rate_l5_diff"] = sd("win_rate_l5")
     feats["win_rate_l3_diff"] = sd("win_rate_l3")
 
-    return pd.DataFrame([feats])[features].fillna(0)
+    return pd.DataFrame([feats])
 
 def prever(f1_name, f2_name, odds_f1=None, odds_f2=None,
            r_ko_odds=None, r_sub_odds=None, r_dec_odds=None,
