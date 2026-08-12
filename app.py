@@ -773,7 +773,7 @@ def build_features(r, b, r_odds=None, b_odds=None):
     feats["win_rate_l5_diff"] = sd("win_rate_l5")
     feats["win_rate_l3_diff"] = sd("win_rate_l3")
 
-    return pd.DataFrame([feats])
+    return pd.DataFrame([feats])[features].fillna(0)
 
 def prever(f1_name, f2_name, odds_f1=None, odds_f2=None,
            r_ko_odds=None, r_sub_odds=None, r_dec_odds=None,
@@ -907,10 +907,10 @@ def prever(f1_name, f2_name, odds_f1=None, odds_f2=None,
     return prob_winner, 1 - prob_winner, r, b, prob_decision, prob_over25, meta_score, ensemble_std
 
 def conviction_label(prob):
-    if prob >= 0.75: return 0, "HIGH CONVICTION 83%", "#D4AF37", "high"
-    if prob >= 0.70: return 1, "MODERATE CONVICTION 79%", "#C0A030", "moderate"
-    if prob >= 0.60: return 2, "SLIGHT FAVOURITE 74%", "#888888", "slight"
-    return 3, "TOO CLOSE TO CALL", "#555555", "close"
+    if prob >= 0.75: return 0, "ALTA CONVICÇÃO 83%", "#D4AF37", "high"
+    if prob >= 0.70: return 1, "CONVICÇÃO MODERADA 79%", "#C0A030", "moderate"
+    if prob >= 0.60: return 2, "LEVE FAVORITO 74%", "#888888", "slight"
+    return 3, "MUITO EQUILIBRADO", "#555555", "close"
 
 
 def conviction_order(prob):
@@ -1466,7 +1466,7 @@ def render_fight_card(c, odds_history=None):
             f'border:1px solid rgba(96,165,250,0.4); border-radius:4px; '
             f'padding:2px 8px; font-size:0.72rem; font-weight:700; '
             f'letter-spacing:0.05em;">'
-            f'🤝 CONSENSUS {(1-ensemble_std/0.04)*100:.0f}%'
+            f'🤝 CONSENSO {(1-ensemble_std/0.04)*100:.0f}%'
             f'</span>'
         )
     if meta_score is not None and meta_score >= 0.75:
@@ -1475,7 +1475,7 @@ def render_fight_card(c, odds_history=None):
             f'border:1px solid rgba(34,197,94,0.4); border-radius:4px; '
             f'padding:2px 8px; font-size:0.72rem; font-weight:700; '
             f'letter-spacing:0.05em;">'
-            f'✅ META-MODEL CONFIRMED {meta_score:.0%}'
+            f'✅ META-MODELO CONFIRMADO {meta_score:.0%}'
             f'</span>'
         )
     elif meta_score is not None and meta_score >= 0.65:
@@ -1484,7 +1484,7 @@ def render_fight_card(c, odds_history=None):
             f'border:1px solid rgba(251,191,36,0.3); border-radius:4px; '
             f'padding:2px 8px; font-size:0.72rem; font-weight:700; '
             f'letter-spacing:0.05em;">'
-            f'⚡ META-MODEL {meta_score:.0%}'
+            f'⚡ META-MODELO {meta_score:.0%}'
             f'</span>'
         )
     card_class = {"high": "fight-card-high", "moderate": "fight-card-med",
@@ -1558,12 +1558,12 @@ def render_fight_card(c, odds_history=None):
         warnings.append('<span style="background:rgba(200,16,46,0.15); color:#e8253f; '
                         'border:1px solid rgba(200,16,46,0.3); border-radius:4px; '
                         'padding:2px 8px; font-size:0.72rem; font-weight:700; '
-                        'letter-spacing:0.05em;">🏆 TITLE FIGHT — model less reliable (64%)</span>')
+                        'letter-spacing:0.05em;">🏆 LUTA DE TÍTULO — modelo menos confiável (64%)</span>')
     if c.get("rounds") == 5 and not c.get("title_bout"):
         warnings.append('<span style="background:rgba(255,165,0,0.15); color:#ffa500; '
                         'border:1px solid rgba(255,165,0,0.3); border-radius:4px; '
                         'padding:2px 8px; font-size:0.72rem; font-weight:700; '
-                        'letter-spacing:0.05em;">⏱️ 5 ROUNDS — model less reliable (62%)</span>')
+                        'letter-spacing:0.05em;">⏱️ 5 ROUNDS — modelo menos confiável (62%)</span>')
     # Late movement warning — mercado a apostar contra o favorito
     prob_fav_c = c.get("prob_fav", 0.5)
     fav_is_red_c = prob_fav_c == c.get("p1", 0)
@@ -1576,7 +1576,7 @@ def render_fight_card(c, odds_history=None):
             f'border:1px solid rgba(232,37,63,0.4); border-radius:4px; '
             f'padding:2px 8px; font-size:0.72rem; font-weight:700; '
             f'letter-spacing:0.05em;">'
-            f'⚠️ MARKET BETTING AGAINST FAVOURITE'
+            f'⚠️ MERCADO APOSTANDO CONTRA O FAVORITO'
             f'</span>'
         )
     warnings_html = " ".join(warnings)
@@ -1601,7 +1601,7 @@ def render_fight_card(c, odds_history=None):
                 f'border:1px solid rgba(251,191,36,0.3); border-radius:4px; '
                 f'padding:2px 8px; font-size:0.72rem; font-weight:700; '
                 f'letter-spacing:0.05em;">'
-                f'📊 MARKET SPLIT: {bigger} {mn:.2f}–{mx:.2f} across {n_bm} books (Δ{sp:.2f})'
+                f'📊 DIVERGÊNCIA DE MERCADO: {bigger} {mn:.2f}–{mx:.2f} em {n_bm} casas (Δ{sp:.2f})'
                 f'</span>'
             )
     if disagree_html:
@@ -1765,16 +1765,16 @@ def render_fight_card(c, odds_history=None):
         f'      <div class="odds-row">'
         f'        <div>'
         f'          <span class="odds-chip">&#128202; Odds <span class="ov">{odds_f1_str}</span></span>'
-        f'          <span class="odds-chip">Market <span class="ov">{mkt_f1_str}</span></span>'
+        f'          <span class="odds-chip">Mercado <span class="ov">{mkt_f1_str}</span></span>'
         f'          {edge_f1_html}'
         f'          {ev_f1_html}'
         f'        </div>'
-        f'        <div style="font-size:0.75rem; color:var(--muted);">Favourite:'
+        f'        <div style="font-size:0.75rem; color:var(--muted);">Favorito:'
         f'          <strong style="color:var(--gold);">{fav}</strong>'
         f'        </div>'
         f'        <div>'
         f'          {edge_f2_html}'
-        f'          <span class="odds-chip">Market <span class="ov">{mkt_f2_str}</span></span>'
+        f'          <span class="odds-chip">Mercado <span class="ov">{mkt_f2_str}</span></span>'
         f'          <span class="odds-chip">&#128202; Odds <span class="ov">{odds_f2_str}</span></span>'
         f'        </div>'
         f'      </div>'
@@ -1799,19 +1799,19 @@ inject_css()
 st.markdown("""
 <div class="ufc-header">
   <div>
-    <div class="ufc-logo-text">🥊 UFC FIGHT PREDICTOR</div>
-    <div class="ufc-subtitle">Ensemble v6 · Powered by Machine Learning</div>
+    <div class="ufc-logo-text">🥊 PREDITOR DE LUTAS UFC</div>
+    <div class="ufc-subtitle">Ensemble v6 · Com tecnologia de Machine Learning</div>
   </div>
 </div>
 <div style="margin: 10px 0 22px;">
-  <span class="badge-stat">🎯 Accuracy <span>69.82%</span></span>
-  <span class="badge-stat">🤖 Models <span>5 ensemble</span></span>
-  <span class="badge-stat">⚡ High Conviction <span>83.5% acc</span></span>
-  <span class="badge-stat">🎯 Moderate <span>79.3% acc</span></span>
+  <span class="badge-stat">🎯 Precisão <span>69.82%</span></span>
+  <span class="badge-stat">🤖 Modelos <span>5 ensemble</span></span>
+  <span class="badge-stat">⚡ Alta Convicção <span>83.5% acc</span></span>
+  <span class="badge-stat">🎯 Moderada <span>79.3% acc</span></span>
 </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["📅  UPCOMING EVENTS", "🔍  PREDICT A FIGHT", "📋  HISTORY"])
+tab1, tab2, tab3 = st.tabs(["📅  PRÓXIMOS EVENTOS", "🔍  PREVER LUTA", "📋  HISTÓRICO"])
 
 # ── TAB 1 ─────────────────────────────────────────────────────────
 with tab1:
@@ -1820,36 +1820,36 @@ with tab1:
         st.markdown("""
         <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.6rem;
              font-weight:800; letter-spacing:0.04em; color:#ffffff; margin-bottom:4px;">
-          UPCOMING FIGHTS
+          PRÓXIMAS LUTAS
         </div>
         """, unsafe_allow_html=True)
 
-    with st.expander("ℹ️ How to read EV (Expected Value)"):
+    with st.expander("ℹ️ Como interpretar o EV (Valor Esperado)"):
         st.markdown("""
-        **EV (Expected Value)** tells you whether a bet is mathematically profitable based on the model's probability vs the bookmaker's odds.
+        **EV (Valor Esperado)** indica se uma aposta é matematicamente lucrativa, com base na probabilidade do modelo comparada às odds da casa de apostas.
 
-        **Formula:** `EV = odds × model_probability - 1`
+        **Fórmula:** `EV = odds × probabilidade_do_modelo - 1`
 
-        **How to interpret:**
-        - 🟢 **EV > 0** → positive expected value. The model thinks this bet is worth taking.
-        - 🔴 **EV < 0** → negative expected value. The bookmaker has an edge.
-        - The higher the EV, the more attractive the bet.
+        **Como interpretar:**
+        - 🟢 **EV > 0** → valor esperado positivo. O modelo acredita que vale a pena fazer essa aposta.
+        - 🔴 **EV < 0** → valor esperado negativo. A casa de apostas tem vantagem.
+        - Quanto maior o EV, mais atraente a aposta.
 
-        **Example:**
-        > Bookmaker offers **2.50** odds on Fighter A. The model gives Fighter A a **50%** chance of winning.
-        > EV = 2.50 × 0.50 − 1 = **+0.25** → For every €1 bet, you expect to profit €0.25 on average.
+        **Exemplo:**
+        > A casa de apostas oferece odds de **2.50** para o Lutador A. O modelo dá ao Lutador A **50%** de chance de vencer.
+        > EV = 2.50 × 0.50 − 1 = **+0.25** → Para cada €1 apostado, espera-se lucrar €0.25 em média.
 
-        > Same odds **2.50**, but model gives only **35%** chance.
-        > EV = 2.50 × 0.35 − 1 = **−0.125** → You expect to lose €0.125 per €1 bet on average.
+        > Mesmas odds de **2.50**, mas o modelo dá apenas **35%** de chance.
+        > EV = 2.50 × 0.35 − 1 = **−0.125** → Espera-se perder €0.125 por cada €1 apostado, em média.
 
-        ⚠️ EV is a long-run statistical concept. A positive EV bet can still lose — it means the bet is profitable *on average* over many bets.
+        ⚠️ EV é um conceito estatístico de longo prazo. Uma aposta com EV positivo ainda pode ser perdida — significa que a aposta é lucrativa *em média* ao longo de muitas apostas.
         """)
     with col_r:
-        if st.button("🔄 Refresh", use_container_width=True):
+        if st.button("🔄 Atualizar", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
 
-    with st.spinner("Loading card and odds..."):
+    with st.spinner("Carregando card e odds..."):
         eventos_ufc  = get_card_ufcstats()
         combates_api = get_upcoming_odds()
         pm_markets   = get_polymarket_odds()
@@ -1876,11 +1876,11 @@ with tab1:
         odds_lookup[par] = (f1_api, f2_api, odds_f1, odds_f2)
 
     if not eventos_ufc:
-        st.error("⚠️ Could not load UFC card.")
+        st.error("⚠️ Não foi possível carregar o card do UFC.")
     else:
         if GITHUB_TOKEN and eventos_ufc:
             if not st.session_state.get("history_toast_shown"):
-                st.toast("✅ Predictions saved to history")
+                st.toast("✅ Previsões salvas no histórico")
                 st.session_state["history_toast_shown"] = True
             try:
                 gh_update_resultados()
@@ -1978,44 +1978,44 @@ with tab1:
                 prob_dec_c = c.get("prob_decision")
                 prob_o25_c = c.get("prob_over25")
                 if prob_dec_c is not None or prob_o25_c is not None:
-                    with st.expander("📊 Secondary Markets"):
+                    with st.expander("📊 Mercados Secundários"):
                         sec_c1, sec_c2 = st.columns(2)
                         if prob_dec_c is not None:
                             with sec_c1:
-                                dec_lbl = "LIKELY DECISION" if prob_dec_c > 0.5 else "LIKELY FINISH"
+                                dec_lbl = "PROVÁVEL DECISÃO" if prob_dec_c > 0.5 else "PROVÁVEL FINALIZAÇÃO"
                                 dec_col = "#D4AF37" if prob_dec_c > 0.5 else "#e8253f"
                                 st.markdown(f"""
                                 <div style="background:var(--bg3); border:1px solid var(--border);
                                      border-radius:10px; padding:14px; text-align:center;">
                                   <div style="font-size:0.7rem; color:var(--muted);
                                        letter-spacing:2px; text-transform:uppercase;
-                                       margin-bottom:4px;">Goes to Decision</div>
+                                       margin-bottom:4px;">Vai para Decisão</div>
                                   <div style="font-family:'Barlow Condensed',sans-serif;
                                        font-size:2rem; font-weight:900;
                                        color:{dec_col};">{prob_dec_c*100:.0f}%</div>
                                   <div style="font-size:0.7rem; color:{dec_col};
                                        font-weight:700; margin-top:2px;">{dec_lbl}</div>
                                   <div style="font-size:0.65rem; color:var(--muted);
-                                       margin-top:2px;">Model accuracy: 59.45%</div>
+                                       margin-top:2px;">Precisão do modelo: 59.45%</div>
                                 </div>
                                 """, unsafe_allow_html=True)
                         if prob_o25_c is not None:
                             with sec_c2:
-                                o25_lbl = "LIKELY OVER" if prob_o25_c > 0.5 else "LIKELY UNDER"
+                                o25_lbl = "PROVÁVEL MAIS" if prob_o25_c > 0.5 else "PROVÁVEL MENOS"
                                 o25_col = "#22c55e" if prob_o25_c > 0.5 else "#60a5fa"
                                 st.markdown(f"""
                                 <div style="background:var(--bg3); border:1px solid var(--border);
                                      border-radius:10px; padding:14px; text-align:center;">
                                   <div style="font-size:0.7rem; color:var(--muted);
                                        letter-spacing:2px; text-transform:uppercase;
-                                       margin-bottom:4px;">Over / Under 2.5 Rounds</div>
+                                       margin-bottom:4px;">Mais / Menos de 2.5 Rounds</div>
                                   <div style="font-family:'Barlow Condensed',sans-serif;
                                        font-size:2rem; font-weight:900;
                                        color:{o25_col};">{prob_o25_c*100:.0f}%</div>
                                   <div style="font-size:0.7rem; color:{o25_col};
                                        font-weight:700; margin-top:2px;">{o25_lbl}</div>
                                   <div style="font-size:0.65rem; color:var(--muted);
-                                       margin-top:2px;">Model accuracy: 62.43%</div>
+                                       margin-top:2px;">Precisão do modelo: 62.43%</div>
                                 </div>
                                 """, unsafe_allow_html=True)
 
@@ -2023,7 +2023,7 @@ with tab1:
                 st.markdown(f"""
                 <div style="background:var(--bg3); border:1px solid var(--border); border-radius:10px;
                      padding:12px 16px; margin-top:12px; color:var(--muted); font-size:0.85rem;">
-                  ⚠️ <strong style="color:var(--text);">{len(sem_dados)} fights without sufficient data</strong><br>
+                  ⚠️ <strong style="color:var(--text);">{len(sem_dados)} lutas sem dados suficientes</strong><br>
                   {'  ·  '.join(sem_dados)}
                 </div>
                 """, unsafe_allow_html=True)
@@ -2035,30 +2035,30 @@ with tab2:
     st.markdown("""
     <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.6rem;
          font-weight:800; letter-spacing:0.04em; color:#ffffff; margin-bottom:20px;">
-      FIGHT ANALYSIS
+      ANÁLISE DE LUTA
     </div>
     """, unsafe_allow_html=True)
 
     col1, col_vs, col2 = st.columns([5, 1, 5])
 
     with col1:
-        st.markdown('<span class="corner-label corner-red">🔴 RED CORNER</span>', unsafe_allow_html=True)
-        red_name     = st.selectbox("Fighter", fighter_names, key="red", label_visibility="collapsed")
-        r_odds_input = st.number_input("Decimal odds", min_value=1.0, value=1.0, step=0.05, key="rodds")
+        st.markdown('<span class="corner-label corner-red">🔴 CANTO VERMELHO</span>', unsafe_allow_html=True)
+        red_name     = st.selectbox("Lutador", fighter_names, key="red", label_visibility="collapsed")
+        r_odds_input = st.number_input("Odds decimais", min_value=1.0, value=1.0, step=0.05, key="rodds")
 
     with col_vs:
         st.markdown('<div class="vs-divider" style="margin-top:36px;">VS</div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<span class="corner-label corner-blue">🔵 BLUE CORNER</span>', unsafe_allow_html=True)
-        blue_name    = st.selectbox("Fighter", fighter_names, key="blue", label_visibility="collapsed")
-        b_odds_input = st.number_input("Decimal odds", min_value=1.0, value=1.0, step=0.05, key="bodds")
+        st.markdown('<span class="corner-label corner-blue">🔵 CANTO AZUL</span>', unsafe_allow_html=True)
+        blue_name    = st.selectbox("Lutador", fighter_names, key="blue", label_visibility="collapsed")
+        b_odds_input = st.number_input("Odds decimais", min_value=1.0, value=1.0, step=0.05, key="bodds")
 
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-    if st.button("🔮  PREDICT A FIGHT", use_container_width=True):
+    if st.button("🔮  PREVER LUTA", use_container_width=True):
         if red_name == blue_name:
-            st.warning("⚠️ Select two different fighters!")
+            st.warning("⚠️ Selecione dois lutadores diferentes!")
         else:
             odds_r = r_odds_input if r_odds_input > 1.0 else None
             odds_b = b_odds_input if b_odds_input > 1.0 else None
@@ -2080,7 +2080,7 @@ with tab2:
                          no_of_rounds=rounds_in)
 
             if res is None:
-                st.error("❌ Insufficient data for one or both fighters.")
+                st.error("❌ Dados insuficientes para um ou ambos os lutadores.")
             else:
                 prob_r, prob_b, red, blue, prob_decision, prob_over25, meta_score, ens_std = res
                 winner  = red_name if prob_r > prob_b else blue_name
@@ -2094,7 +2094,7 @@ with tab2:
                     <span class="conviction-badge conv-{level}">{em} {lbl}</span>
                   </div>
                   <div class="result-winner">{w_corner} {winner}</div>
-                  <div class="result-pct">Probability: {max(prob_r, prob_b):.1%}</div>
+                  <div class="result-pct">Probabilidade: {max(prob_r, prob_b):.1%}</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -2122,14 +2122,14 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
 
-                # Model vs Market
+                # Modelo vs Mercado
                 if odds_r and odds_b:
                     st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
                     st.markdown("""
                     <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.1rem;
                          font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
                          color:var(--muted); margin-bottom:12px;">
-                      💰 Model vs Market
+                      💰 Modelo vs Mercado
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -2152,11 +2152,11 @@ with tab2:
                               <strong style="color:var(--text);">{prob_r:.1%}</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between;">
-                              <span style="color:var(--muted);">Market</span>
+                              <span style="color:var(--muted);">Mercado</span>
                               <strong style="color:var(--text);">{prob_mkt_r:.1%}</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:5px;">
-                              <span style="color:var(--muted);">Edge</span>
+                              <span style="color:var(--muted);">Vantagem</span>
                               <strong class="{cls_r}">{diff_r:+.1%}</strong>
                             </div>
                           </div>
@@ -2176,11 +2176,11 @@ with tab2:
                               <strong style="color:var(--text);">{prob_b:.1%}</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between;">
-                              <span style="color:var(--muted);">Market</span>
+                              <span style="color:var(--muted);">Mercado</span>
                               <strong style="color:var(--text);">{prob_mkt_b:.1%}</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:5px;">
-                              <span style="color:var(--muted);">Edge</span>
+                              <span style="color:var(--muted);">Vantagem</span>
                               <strong class="{cls_b}">{diff_b:+.1%}</strong>
                             </div>
                           </div>
@@ -2195,21 +2195,21 @@ with tab2:
                     <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.1rem;
                          font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
                          color:var(--muted); margin-bottom:12px;">
-                      🎯 Secondary Markets
+                      🎯 Mercados Secundários
                     </div>
                     """, unsafe_allow_html=True)
 
                     sec_cols = st.columns(2)
                     if prob_decision is not None:
                         with sec_cols[0]:
-                            dec_label = "LIKELY DECISION" if prob_decision > 0.5 else "LIKELY FINISH"
+                            dec_label = "PROVÁVEL DECISÃO" if prob_decision > 0.5 else "PROVÁVEL FINALIZAÇÃO"
                             dec_color = "#D4AF37" if prob_decision > 0.5 else "#e8253f"
                             st.markdown(f"""
                             <div style="background:var(--bg3); border:1px solid var(--border);
                                  border-radius:10px; padding:16px; text-align:center;">
                               <div style="font-size:0.75rem; color:var(--muted);
                                    letter-spacing:2px; text-transform:uppercase;
-                                   margin-bottom:6px;">Goes to Decision</div>
+                                   margin-bottom:6px;">Vai para Decisão</div>
                               <div style="font-family:'Barlow Condensed',sans-serif;
                                    font-size:2rem; font-weight:900;
                                    color:{dec_color};">{prob_decision*100:.0f}%</div>
@@ -2217,19 +2217,19 @@ with tab2:
                                    font-weight:700; letter-spacing:1px;
                                    margin-top:4px;">{dec_label}</div>
                               <div style="font-size:0.7rem; color:var(--muted);
-                                   margin-top:4px;">Model accuracy: 59.45%</div>
+                                   margin-top:4px;">Precisão do modelo: 59.45%</div>
                             </div>
                             """, unsafe_allow_html=True)
                     if prob_over25 is not None:
                         with sec_cols[1]:
-                            o25_label = "LIKELY OVER" if prob_over25 > 0.5 else "LIKELY UNDER"
+                            o25_label = "PROVÁVEL MAIS" if prob_over25 > 0.5 else "PROVÁVEL MENOS"
                             o25_color = "#22c55e" if prob_over25 > 0.5 else "#60a5fa"
                             st.markdown(f"""
                             <div style="background:var(--bg3); border:1px solid var(--border);
                                  border-radius:10px; padding:16px; text-align:center;">
                               <div style="font-size:0.75rem; color:var(--muted);
                                    letter-spacing:2px; text-transform:uppercase;
-                                   margin-bottom:6px;">Over / Under 2.5 Rounds</div>
+                                   margin-bottom:6px;">Mais / Menos de 2.5 Rounds</div>
                               <div style="font-family:'Barlow Condensed',sans-serif;
                                    font-size:2rem; font-weight:900;
                                    color:{o25_color};">{prob_over25*100:.0f}%</div>
@@ -2237,7 +2237,7 @@ with tab2:
                                    font-weight:700; letter-spacing:1px;
                                    margin-top:4px;">{o25_label}</div>
                               <div style="font-size:0.7rem; color:var(--muted);
-                                   margin-top:4px;">Model accuracy: 62.43%</div>
+                                   margin-top:4px;">Precisão do modelo: 62.43%</div>
                             </div>
                             """, unsafe_allow_html=True)
 
@@ -2246,31 +2246,31 @@ with tab2:
                 <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.1rem;
                      font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
                      color:var(--muted); margin-bottom:12px;">
-                  📊 Fighter Stats
+                  📊 Estatísticas do Lutador
                 </div>
                 """, unsafe_allow_html=True)
 
                 stats_map = [
-                    ("Wins",             "wins"),
-                    ("Losses",             "losses"),
-                    ("Win Streak",           "win_streak"),
-                    ("KO Wins",              "ko_wins"),
-                    ("Sub Wins",             "sub_wins"),
-                    ("Height (cm)",          "height"),
-                    ("Reach (cm)",           "reach"),
-                    ("Age",                "age"),
+                    ("Vitórias",             "wins"),
+                    ("Derrotas",             "losses"),
+                    ("Sequência de Vitórias","win_streak"),
+                    ("Vitórias por KO",      "ko_wins"),
+                    ("Vitórias por Sub",     "sub_wins"),
+                    ("Altura (cm)",          "height"),
+                    ("Alcance (cm)",         "reach"),
+                    ("Idade",                "age"),
                     ("SLpM",                 "SLpM"),
                     ("SApM",                 "SApM"),
-                    ("Str. Accuracy",        "sig_str_acc"),
-                    ("Str. Defence",         "str_def"),
-                    ("TD avg",               "td_avg"),
-                    ("TD Defence",           "td_def"),
-                    ("Finish Rate",          "finish_rate"),
-                    ("KO Rate",              "ko_rate"),
-                    ("Sub Rate",             "sub_rate"),
-                    ("Recent Win Rate",     "winrate_recente"),
-                    ("KO losses (last 3)", "ko_sofrido_recente"),
-                    ("Days inactive",         "dias_inactive"),
+                    ("Precisão de Golpes",   "sig_str_acc"),
+                    ("Defesa de Golpes",     "str_def"),
+                    ("Média de TD",          "td_avg"),
+                    ("Defesa de TD",         "td_def"),
+                    ("Taxa de Finalização",  "finish_rate"),
+                    ("Taxa de KO",           "ko_rate"),
+                    ("Taxa de Sub",          "sub_rate"),
+                    ("Taxa de Vitória Recente","winrate_recente"),
+                    ("Derrotas por KO (últimas 3)","ko_sofrido_recente"),
+                    ("Dias inativo",         "dias_inactive"),
                 ]
                 rows = []
                 for label, col in stats_map:
@@ -2289,22 +2289,22 @@ with tab3:
     st.markdown("""
     <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.6rem;
          font-weight:800; letter-spacing:0.04em; color:#ffffff; margin-bottom:4px;">
-      PREDICTION HISTORY
+      HISTÓRICO DE PREVISÕES
     </div>
     """, unsafe_allow_html=True)
 
     col_h1, col_h2 = st.columns([3,1])
     with col_h2:
-        if st.button("🔄 Update Results", use_container_width=True):
-            with st.spinner("Fetching latest results..."):
+        if st.button("🔄 Atualizar Resultados", use_container_width=True):
+            with st.spinner("Buscando últimos resultados..."):
                 gh_update_resultados()
-            st.success("Results updated!")
+            st.success("Resultados atualizados!")
             st.rerun()
 
     hist = get_historico()
 
     if hist.empty:
-        st.info("No prediction history yet. Predictions are saved automatically when you load the Upcoming Events tab.")
+        st.info("Ainda não há histórico de previsões. As previsões são salvas automaticamente ao carregar a aba Próximos Eventos.")
     else:
         total = len(com_resultado)
         com_resultado = hist[hist["correct"].isin(["✅","❌"])]
@@ -2312,20 +2312,20 @@ with tab3:
         acc = corretos / len(com_resultado) if len(com_resultado) > 0 else 0
 
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Total Predictions", total)
-        m2.metric("With Results", len(com_resultado))
-        m3.metric("Correct", corretos)
-        m4.metric("Accuracy", f"{acc:.1%}")
+        m1.metric("Total de Previsões", total)
+        m2.metric("Com Resultado", len(com_resultado))
+        m3.metric("Acertos", corretos)
+        m4.metric("Precisão", f"{acc:.1%}")
 
         st.markdown("---")
 
         # Mostrar só eventos com pelo menos um resultado
         eventos_com_resultado = hist[hist["correct"].isin(["✅","❌"])]["event_name"].unique().tolist()
         hist = hist[hist["event_name"].isin(eventos_com_resultado)]
-        eventos = ["All"] + sorted(eventos_com_resultado, reverse=True)
-        evento_sel = st.selectbox("Filter by Event", eventos)
+        eventos = ["Todos"] + sorted(eventos_com_resultado, reverse=True)
+        evento_sel = st.selectbox("Filtrar por Evento", eventos)
 
-        df_show = hist if evento_sel == "All" else hist[hist["event_name"] == evento_sel]
+        df_show = hist if evento_sel == "Todos" else hist[hist["event_name"] == evento_sel]
         df_show = df_show.sort_values("saved_at", ascending=False)
 
         for _, row in df_show.iterrows():
@@ -2333,7 +2333,7 @@ with tab3:
             correct_val = "" if pd.isna(correct_val) else str(correct_val)
             correct_icon = correct_val if correct_val in ["✅","❌"] else "⏳"
             actual = row["actual_winner"]
-            winner_display = "Pending" if (pd.isna(actual) or str(actual).strip() == "") else str(actual)
+            winner_display = "Pendente" if (pd.isna(actual) or str(actual).strip() == "") else str(actual)
             pred_col = "#22c55e" if correct_val == "✅" else ("#e8253f" if correct_val == "❌" else "#D4AF37")
 
             st.markdown(f"""
@@ -2352,9 +2352,9 @@ with tab3:
                 <div style="font-size:1.4rem;">{correct_icon}</div>
               </div>
               <div style="display:flex; gap:20px; margin-top:6px; font-size:0.8rem;">
-                <span>🎯 Predicted: <strong style="color:{pred_col};">{row['predicted_winner']}</strong>
+                <span>🎯 Previsto: <strong style="color:{pred_col};">{row['predicted_winner']}</strong>
                   ({max(row['prob_f1'], row['prob_f2'])*100:.0f}% · {row['conviction']})</span>
-                <span>🏆 Result: <strong style="color:#fff;">{winner_display}</strong></span>
+                <span>🏆 Resultado: <strong style="color:#fff;">{winner_display}</strong></span>
               </div>
             </div>
             """, unsafe_allow_html=True)
